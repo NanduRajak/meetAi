@@ -14,6 +14,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { FaGithub, FaGoogle } from "react-icons/fa";
 import { Alert, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 import { useForm } from "react-hook-form";
@@ -21,7 +22,6 @@ import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import { set } from "date-fns";
 const formSchema = z.object({
   email: z.string().email(),
   password: z.string().min(1, { message: "password is required!" }),
@@ -46,11 +46,31 @@ export const SignInView = () => {
       {
         email: data.email,
         password: data.password,
+        callbackURL: "/",
       },
       {
         onSuccess: () => {
           setPending(false);
           router.push("/");
+        },
+        onError: ({ error }) => {
+          setPending(false);
+          setError(error.message);
+        },
+      }
+    );
+  };
+  const onSocial = (provider: "github" | "google") => {
+    setError(null);
+    setPending(true);
+    authClient.signIn.social(
+      {
+        provider: provider,
+        callbackURL: "/",
+      },
+      {
+        onSuccess: () => {
+          setPending(false);
         },
         onError: ({ error }) => {
           setPending(false);
@@ -129,20 +149,22 @@ export const SignInView = () => {
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <Button
+                    onClick={() => onSocial("google")}
                     disabled={pending}
                     className="w-full"
                     variant="outline"
                     type="button"
                   >
-                    Google
+                    <FaGoogle />
                   </Button>
                   <Button
+                    onClick={() => onSocial("github")}
                     disabled={pending}
                     className="w-full"
                     variant="outline"
                     type="button"
                   >
-                    Github
+                    <FaGithub />
                   </Button>
                 </div>
                 <div className="text-center text-sm">
